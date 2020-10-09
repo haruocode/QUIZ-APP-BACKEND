@@ -22,24 +22,28 @@ use App\AnswerHistory;
 //     return $request->user();
 // });
 
-Route::get('/titles/new', function() {
+Route::get('/titles/new', function () {
     return Title::latest()->take(5)->get();
 });
 
-Route::get('/categories', function() {
-    return Category::orderBy('sort')->get();
+Route::get('/categories', function () {
+    return Category::all();
 });
 
-Route::get('/titles', function() {
-    return Title::paginate(3);
+Route::get('/category', function (Request $request) {
+    return Category::find($request->category_id);
 });
 
-Route::get('/quiz/{quiz_id}', function($quiz_id) {
+Route::get('/titles', function (Request $request) {
+    return Title::where('category_id', $request->category_id)->paginate(1);
+});
+
+Route::get('/quiz/{quiz_id}', function ($quiz_id) {
     $quiz = Quiz::find($quiz_id);
     $title = Quiz::find($quiz_id)->title;
     return [
         "id" => $quiz->id,
-        "title" => $title,
+        "title" => $title->title,
         "question" => $quiz->question,
         "answer1" => $quiz->answer1,
         "answer2" => $quiz->answer2,
@@ -48,7 +52,7 @@ Route::get('/quiz/{quiz_id}', function($quiz_id) {
     ];
 })->where('quiz_id', '[0-9]+');
 
-Route::post('/quiz/answer', function(Request $request) {
+Route::post('/quiz/answer', function (Request $request) {
     // バリデーション
     $validatedData = $request->validate([
         'quizId' => 'required|integer',

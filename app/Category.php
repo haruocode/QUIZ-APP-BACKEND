@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $visible = ['name', 'sort', 'thumbnail'];
+    protected $visible = ['id', 'name', 'sort', 'thumbnail'];
 }
