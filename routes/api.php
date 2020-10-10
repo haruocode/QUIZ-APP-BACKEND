@@ -38,7 +38,13 @@ Route::get('/titles', function (Request $request) {
     return Title::where('category_id', $request->category_id)->paginate(1);
 });
 
-Route::get('/quiz/{quiz_id}', function ($quiz_id) {
+Route::get('/quiz', function (Request $request) {
+    $quiz_id = $request->quiz_id;
+    // パラメーターにquiz_idが無い場合はtitle_idから一番最初のquiz_idを取得する
+    if(!$quiz_id && $request->title_id) {
+        $quiz = Quiz::where('title_id', $request->title_id)->orderBy('id')->first();
+        $quiz_id = $quiz->id;
+    }
     $quiz = Quiz::find($quiz_id);
     $title = Quiz::find($quiz_id)->title;
     return [
@@ -55,14 +61,14 @@ Route::get('/quiz/{quiz_id}', function ($quiz_id) {
 Route::post('/quiz/answer', function (Request $request) {
     // バリデーション
     $validatedData = $request->validate([
-        'quizId' => 'required|integer',
+        'quiz_id' => 'required|integer',
         'answer' => 'required|between:1,4',
     ]);
     $answer_history = new AnswerHistory();
-    $answer_history->quiz_id = $request->quizId;
+    $answer_history->quiz_id = $request->quiz_id;
     $answer_history->answer = $request->answer;
     $result = $answer_history->save();
-    $quiz = Quiz::find($request->quizId);
+    $quiz = Quiz::find($request->quiz_id);
     $next_quiz_id = getNextQuizId($quiz->title_id, $quiz->id);
     return [
         'answer'       => $quiz->answer,
